@@ -7,4 +7,5 @@ const (
 	MISSING_DATA         = "missing data"
 	INVALID_CONTENT_TYPE = "invalid content type"
 	INVALID_BODY_FORMAT  = "invalid body format"
+	RESTRICTED_UPDATE    = "restricted update"
 )

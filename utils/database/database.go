@@ -9,6 +9,11 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	PENDING   = "PENDING"
+	COMPLETED = "COMPLETED"
+)
+
 type Basket struct {
 	ID        uint      `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
@@ -31,6 +36,7 @@ func InitializeDatabase() error {
 func GetBaskets() []Basket {
 	var baskets []Basket
 	db.Raw("SELECT * FROM baskets;").Scan(&baskets)
+
 	return baskets
 }
 
@@ -42,16 +48,24 @@ func CreateBasket(data string, state string) (uint, error) {
 	var id uint
 	db.Raw("INSERT INTO baskets (created_at, updated_at, data, state) VALUES(?, ?, ?, ?) RETURNING id;",
 		time.Now(), time.Now(), data, state).Scan(&id)
+
 	return id, nil
 }
 
 func UpdateBasket(id uint, data string, state string) error {
-	if state != "COMPLETED" && state != "PENDING" {
+	if state != COMPLETED && state != PENDING {
 		return errors.New(custom_error.INVALID_STATE)
+	}
+
+	var current_state string
+	db.Raw("SELECT state FROM baskets WHERE id = ?;", id).Scan(&current_state)
+	if current_state == COMPLETED {
+		return errors.New(custom_error.RESTRICTED_UPDATE)
 	}
 
 	db.Exec("UPDATE baskets SET updated_at = ?, data = ?, state = ? WHERE id = ?;",
 		time.Now(), data, state, id)
+
 	return nil
 }
 
@@ -61,6 +75,7 @@ func GetBasket(id uint) (Basket, error) {
 	if tx.RowsAffected != 1 {
 		return basket, errors.New(custom_error.INVALID_ID)
 	}
+
 	return basket, nil
 }
 
@@ -69,5 +84,6 @@ func DeleteBasket(id uint) error {
 	if tx.RowsAffected != 1 {
 		return errors.New(custom_error.INVALID_ID)
 	}
+
 	return nil
 }
