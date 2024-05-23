@@ -23,7 +23,7 @@ func CreateToken(user_id uint) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
 			"user_id": user_id,
-			"exp":     time.Now().Add(time.Second).Unix(),
+			"exp":     time.Now().Add(time.Hour).Unix(),
 		})
 
 	token_string, err := token.SignedString(secret_key)

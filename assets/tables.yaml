@@ -9,6 +9,6 @@ CREATE TABLE baskets (
   user_id int REFERENCES users not null,
   created_at timestamp not null,
   updated_at timestamp not null,
-  data  varchar(2048) not null,
+  data  JSONB not null,
   state varchar(16) not null
 );

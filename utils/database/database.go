@@ -1,6 +1,8 @@
 package database
 
 import (
+	"database/sql/driver"
+	"encoding/json"
 	"errors"
 	"time"
 
@@ -19,8 +21,22 @@ type Basket struct {
 	UserID    uint      `json:"user_id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
-	Data      string    `json:"data"`
+	Data      JSONB     `json:"data"`
 	State     string    `json:"state"`
+}
+
+type JSONB map[string]interface{}
+
+func (jsonField JSONB) Value() (driver.Value, error) {
+	return json.Marshal(jsonField)
+}
+
+func (jsonField *JSONB) Scan(value interface{}) error {
+	data, ok := value.([]byte)
+	if !ok {
+		return errors.New("type assertion to []byte failed")
+	}
+	return json.Unmarshal(data, &jsonField)
 }
 
 type User struct {
@@ -69,7 +85,7 @@ func GetBaskets(user_id uint) []Basket {
 	return baskets
 }
 
-func CreateBasket(user_id uint, data string, state string) (uint, error) {
+func CreateBasket(user_id uint, data map[string]interface{}, state string) (uint, error) {
 	if state != "COMPLETED" && state != "PENDING" {
 		return 0, errors.New(custom_error.INVALID_STATE)
 	}
@@ -81,7 +97,7 @@ func CreateBasket(user_id uint, data string, state string) (uint, error) {
 	return id, nil
 }
 
-func UpdateBasket(user_id uint, id uint, data string, state string) error {
+func UpdateBasket(user_id uint, id uint, data map[string]interface{}, state string) error {
 	if state != COMPLETED && state != PENDING {
 		return errors.New(custom_error.INVALID_STATE)
 	}

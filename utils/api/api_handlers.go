@@ -163,7 +163,7 @@ func createBasket(c echo.Context) error {
 	}
 
 	// Extracting the data from reqeust's json body.
-	data, ok := content["data"].(string)
+	data, ok := content["data"].(map[string]interface{})
 	if !ok {
 		return c.String(http.StatusBadRequest, custom_error.MISSING_DATA)
 	}
@@ -213,7 +213,7 @@ func updateBasket(c echo.Context) error {
 	}
 
 	// Extracting the data from reqeust's json body.
-	data, ok := content["data"].(string)
+	data, ok := content["data"].(map[string]interface{})
 	if !ok {
 		return c.String(http.StatusBadRequest, custom_error.MISSING_DATA)
 	}
