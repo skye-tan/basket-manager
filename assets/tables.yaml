@@ -9,6 +9,6 @@ CREATE TABLE baskets (
 
 CREATE TABLE users (
   id serial primary key not null,
+  username varchar(64) not null unique,
   password varchar(64) not null,
-  jwt varchar(256),
 );
