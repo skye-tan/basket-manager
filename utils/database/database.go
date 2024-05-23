@@ -87,7 +87,7 @@ func UpdateBasket(user_id uint, id uint, data string, state string) error {
 	}
 
 	var current_state string
-	tx := db.Raw("SELECT state FROM baskets WHERE id = ? WHERE user_id = ?;", id, user_id).Scan(&current_state)
+	tx := db.Raw("SELECT state FROM baskets WHERE id = ? AND user_id = ?;", id, user_id).Scan(&current_state)
 	if tx.RowsAffected != 1 {
 		return errors.New(custom_error.INVALID_ARGUMENTS)
 	}

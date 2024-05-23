@@ -14,5 +14,6 @@ const (
 	MISSING_PASSWORD     = "missing password"
 	USED_USERNAME        = "previously used username"
 	TOKEN_FAILURE        = "could not operate on jwt"
+	EXPIRED_TOKEN        = "expired token"
 	RESTRICTED_UPDATE    = "state has been set completed before"
 )

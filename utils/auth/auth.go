@@ -23,7 +23,7 @@ func CreateToken(user_id uint) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
 			"user_id": user_id,
-			"exp":     time.Now().Add(time.Hour).Unix(),
+			"exp":     time.Now().Add(time.Second).Unix(),
 		})
 
 	token_string, err := token.SignedString(secret_key)
@@ -51,5 +51,5 @@ func VerifyToken(token_string string) (uint, error) {
 		return 0, errors.New(custom_error.INVALID_TOKEN)
 	}
 
-	return claims["user_id"].(uint), nil
+	return uint(claims["user_id"].(float64)), nil
 }
