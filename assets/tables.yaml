@@ -1,0 +1,7 @@
+CREATE TABLE baskets (
+  id serial primary key not null,
+  created_at timestamp not null,
+  updated_at timestamp not null,
+  data  varchar(2048) not null,
+  state varchar(8) not null
+);
