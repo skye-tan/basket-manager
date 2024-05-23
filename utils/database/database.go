@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/skye-tan/basket-manager/utils"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -29,31 +30,44 @@ func InitializeDatabase() error {
 
 func GetBaskets() []Basket {
 	var baskets []Basket
-	db.Raw("SELECT id, created_at, updated_at, data, state FROM baskets;").Scan(&baskets)
+	db.Raw("SELECT * FROM baskets;").Scan(&baskets)
 	return baskets
 }
 
-func CreateBasket(data string, state string) uint {
+func CreateBasket(data string, state string) (uint, error) {
+	if state != "COMPLETED" && state != "PENDING" {
+		return 0, errors.New(custom_error.INVALID_STATE)
+	}
+
 	var id uint
 	db.Raw("INSERT INTO baskets (created_at, updated_at, data, state) VALUES(?, ?, ?, ?) RETURNING id;",
 		time.Now(), time.Now(), data, state).Scan(&id)
-	return id
+	return id, nil
 }
 
-func UpdateBasket(id uint, data string, state string) {
+func UpdateBasket(id uint, data string, state string) error {
+	if state != "COMPLETED" && state != "PENDING" {
+		return errors.New(custom_error.INVALID_STATE)
+	}
+
 	db.Exec("UPDATE baskets SET updated_at = ?, data = ?, state = ? WHERE id = ?;",
 		time.Now(), data, state, id)
+	return nil
 }
 
 func GetBasket(id uint) (Basket, error) {
 	var basket Basket
 	tx := db.Raw("SELECT * FROM baskets WHERE id = ?;", id).Scan(&basket)
-	if tx.RowsAffected == 0 {
-		return basket, errors.New("invalid id")
+	if tx.RowsAffected != 1 {
+		return basket, errors.New(custom_error.INVALID_ID)
 	}
 	return basket, nil
 }
 
-func DeleteBasket(id uint) {
-	db.Exec("DELETE FROM baskets WHERE id = ?;", id)
+func DeleteBasket(id uint) error {
+	tx := db.Exec("DELETE FROM baskets WHERE id = ?;", id)
+	if tx.RowsAffected != 1 {
+		return errors.New(custom_error.INVALID_ID)
+	}
+	return nil
 }

@@ -1,7 +1,14 @@
 CREATE TABLE baskets (
   id serial primary key not null,
+  user_id int REFERENCES users not null,
   created_at timestamp not null,
   updated_at timestamp not null,
   data  varchar(2048) not null,
   state varchar(8) not null
+);
+
+CREATE TABLE users (
+  id serial primary key not null,
+  password varchar(64) not null,
+  jwt varchar(256),
 );
