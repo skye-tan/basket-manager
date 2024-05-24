@@ -72,7 +72,7 @@ func GetUser(username string) (User, error) {
 	var user User
 	tx := db.Raw("SELECT * FROM users where username = ?;", username).Scan(&user)
 	if tx.RowsAffected != 1 {
-		return User{}, errors.New(custom_error.INVALID_ARGUMENTS)
+		return User{}, errors.New(custom_error.INVALID_CREDENTIALS)
 	}
 
 	return user, nil
