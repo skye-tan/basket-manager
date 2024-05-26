@@ -4,7 +4,6 @@ const (
 	INVALID_ID           = "invalid id"
 	INVALID_STATE        = "invalid state"
 	INVALID_TOKEN        = "invalid token"
-	INVALID_ARGUMENTS    = "invalid arguments"
 	INVALID_CREDENTIALS  = "invlaid credentials"
 	INVALID_BODY_FORMAT  = "invalid body format"
 	INVALID_CONTENT_TYPE = "invalid content type"

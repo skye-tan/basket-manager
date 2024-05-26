@@ -105,7 +105,7 @@ func UpdateBasket(user_id uint, id uint, data map[string]interface{}, state stri
 	var current_state string
 	tx := DB.Raw("SELECT state FROM baskets WHERE id = ? AND user_id = ?;", id, user_id).Scan(&current_state)
 	if tx.RowsAffected != 1 {
-		return errors.New(custom_error.INVALID_ARGUMENTS)
+		return errors.New(custom_error.INVALID_ID)
 	}
 	if current_state == COMPLETED {
 		return errors.New(custom_error.RESTRICTED_UPDATE)
@@ -114,7 +114,7 @@ func UpdateBasket(user_id uint, id uint, data map[string]interface{}, state stri
 	tx = DB.Exec("UPDATE baskets SET updated_at = ?, data = ?, state = ? WHERE id = ? AND user_id = ?;",
 		time.Now(), data, state, id, user_id)
 	if tx.RowsAffected != 1 {
-		return errors.New(custom_error.INVALID_ARGUMENTS)
+		return errors.New(custom_error.INVALID_ID)
 	}
 
 	return nil
@@ -124,7 +124,7 @@ func GetBasket(user_id uint, id uint) (Basket, error) {
 	var basket Basket
 	tx := DB.Raw("SELECT * FROM baskets WHERE id = ? AND user_id = ?;", id, user_id).Scan(&basket)
 	if tx.RowsAffected != 1 {
-		return Basket{}, errors.New(custom_error.INVALID_ARGUMENTS)
+		return Basket{}, errors.New(custom_error.INVALID_ID)
 	}
 
 	return basket, nil
@@ -133,7 +133,7 @@ func GetBasket(user_id uint, id uint) (Basket, error) {
 func DeleteBasket(user_id uint, id uint) error {
 	tx := DB.Exec("DELETE FROM baskets WHERE id = ? AND user_id = ?;", id, user_id)
 	if tx.RowsAffected != 1 {
-		return errors.New(custom_error.INVALID_ARGUMENTS)
+		return errors.New(custom_error.INVALID_ID)
 	}
 
 	return nil
