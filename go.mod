@@ -2,14 +2,6 @@ module github.com/skye-tan/basket-manager
 
 go 1.22.3
 
-replace github.com/skye-tan/basket-manager/utils => ./utils
-
-replace github.com/skye-tan/basket-manager/utils/api => ./utils/api
-
-replace github.com/skye-tan/basket-manager/utils/auth => ./utils/auth
-
-replace github.com/skye-tan/basket-manager/utils/database => ./utils/database
-
 require (
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/labstack/echo/v4 v4.12.0

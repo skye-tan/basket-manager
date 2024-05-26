@@ -9,6 +9,11 @@ import (
 	custom_error "github.com/skye-tan/basket-manager/utils"
 )
 
+type CustomClaims struct {
+	UserID uint
+	jwt.RegisteredClaims
+}
+
 var secret_key = make([]byte, 16)
 
 func GenerateSecretKey() {
@@ -20,36 +25,31 @@ func GenerateSecretKey() {
 }
 
 func CreateToken(user_id uint) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
-		jwt.MapClaims{
-			"user_id": user_id,
-			"exp":     time.Now().Add(time.Hour).Unix(),
-		})
-
-	token_string, err := token.SignedString(secret_key)
-	if err != nil {
-		return "", err
+	claims := &CustomClaims{
+		UserID: user_id,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
+		},
 	}
 
-	return token_string, nil
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	token_string, err := token.SignedString(secret_key)
+
+	return token_string, err
 }
 
 func VerifyToken(token_string string) (uint, error) {
-	token, err := jwt.Parse(token_string, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(token_string, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return secret_key, nil
 	})
 	if err != nil {
-		return 0, err
-	}
-
-	if !token.Valid {
 		return 0, errors.New(custom_error.INVALID_TOKEN)
 	}
 
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		return 0, errors.New(custom_error.INVALID_TOKEN)
+	if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
+		return claims.UserID, nil
 	}
 
-	return uint(claims["user_id"].(float64)), nil
+	return 0, errors.New(custom_error.INVALID_TOKEN)
 }

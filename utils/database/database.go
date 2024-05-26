@@ -45,24 +45,24 @@ type User struct {
 	Password string
 }
 
-var db *gorm.DB
+var DB *gorm.DB
 
 func InitializeDatabase() error {
 	var err error
 
 	dsn := "host=localhost user=postgres password=a dbname=web port=5432 sslmode=disable"
-	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	return err
 }
 
 func AddUser(username string, password string) error {
-	tx := db.Exec("SELECT * FROM users where username = ?;", username)
+	tx := DB.Exec("SELECT * FROM users where username = ?;", username)
 	if tx.RowsAffected != 0 {
 		return errors.New(custom_error.USED_USERNAME)
 	}
 
-	db.Exec("INSERT INTO users (username, password) VALUES(?, ?);",
+	DB.Exec("INSERT INTO users (username, password) VALUES(?, ?);",
 		username, password)
 
 	return nil
@@ -70,7 +70,7 @@ func AddUser(username string, password string) error {
 
 func GetUser(username string) (User, error) {
 	var user User
-	tx := db.Raw("SELECT * FROM users where username = ?;", username).Scan(&user)
+	tx := DB.Raw("SELECT * FROM users where username = ?;", username).Scan(&user)
 	if tx.RowsAffected != 1 {
 		return User{}, errors.New(custom_error.INVALID_CREDENTIALS)
 	}
@@ -80,7 +80,7 @@ func GetUser(username string) (User, error) {
 
 func GetBaskets(user_id uint) []Basket {
 	var baskets []Basket
-	db.Raw("SELECT * FROM baskets WHERE user_id = ?;", user_id).Scan(&baskets)
+	DB.Raw("SELECT * FROM baskets WHERE user_id = ?;", user_id).Scan(&baskets)
 
 	return baskets
 }
@@ -91,7 +91,7 @@ func CreateBasket(user_id uint, data map[string]interface{}, state string) (uint
 	}
 
 	var id uint
-	db.Raw("INSERT INTO baskets (user_id, created_at, updated_at, data, state) VALUES(?, ?, ?, ?, ?) RETURNING id;",
+	DB.Raw("INSERT INTO baskets (user_id, created_at, updated_at, data, state) VALUES(?, ?, ?, ?, ?) RETURNING id;",
 		user_id, time.Now(), time.Now(), data, state).Scan(&id)
 
 	return id, nil
@@ -103,7 +103,7 @@ func UpdateBasket(user_id uint, id uint, data map[string]interface{}, state stri
 	}
 
 	var current_state string
-	tx := db.Raw("SELECT state FROM baskets WHERE id = ? AND user_id = ?;", id, user_id).Scan(&current_state)
+	tx := DB.Raw("SELECT state FROM baskets WHERE id = ? AND user_id = ?;", id, user_id).Scan(&current_state)
 	if tx.RowsAffected != 1 {
 		return errors.New(custom_error.INVALID_ARGUMENTS)
 	}
@@ -111,7 +111,7 @@ func UpdateBasket(user_id uint, id uint, data map[string]interface{}, state stri
 		return errors.New(custom_error.RESTRICTED_UPDATE)
 	}
 
-	tx = db.Exec("UPDATE baskets SET updated_at = ?, data = ?, state = ? WHERE id = ? AND user_id = ?;",
+	tx = DB.Exec("UPDATE baskets SET updated_at = ?, data = ?, state = ? WHERE id = ? AND user_id = ?;",
 		time.Now(), data, state, id, user_id)
 	if tx.RowsAffected != 1 {
 		return errors.New(custom_error.INVALID_ARGUMENTS)
@@ -122,7 +122,7 @@ func UpdateBasket(user_id uint, id uint, data map[string]interface{}, state stri
 
 func GetBasket(user_id uint, id uint) (Basket, error) {
 	var basket Basket
-	tx := db.Raw("SELECT * FROM baskets WHERE id = ? AND user_id = ?;", id, user_id).Scan(&basket)
+	tx := DB.Raw("SELECT * FROM baskets WHERE id = ? AND user_id = ?;", id, user_id).Scan(&basket)
 	if tx.RowsAffected != 1 {
 		return Basket{}, errors.New(custom_error.INVALID_ARGUMENTS)
 	}
@@ -131,7 +131,7 @@ func GetBasket(user_id uint, id uint) (Basket, error) {
 }
 
 func DeleteBasket(user_id uint, id uint) error {
-	tx := db.Exec("DELETE FROM baskets WHERE id = ? AND user_id = ?;", id, user_id)
+	tx := DB.Exec("DELETE FROM baskets WHERE id = ? AND user_id = ?;", id, user_id)
 	if tx.RowsAffected != 1 {
 		return errors.New(custom_error.INVALID_ARGUMENTS)
 	}

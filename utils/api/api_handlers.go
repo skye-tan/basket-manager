@@ -48,35 +48,47 @@ func register(c echo.Context) error {
 	// Checking request's content type.
 	content_type := c.Request().Header.Get(echo.HeaderContentType)
 	if content_type != "application/json" {
-		return c.String(http.StatusBadRequest, custom_error.INVALID_CONTENT_TYPE)
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": custom_error.INVALID_CONTENT_TYPE,
+		})
 	}
 
 	// Extracting request's json boby.
 	content := make(map[string]interface{})
 	err := json.NewDecoder(c.Request().Body).Decode(&content)
 	if err != nil {
-		return c.String(http.StatusBadRequest, custom_error.INVALID_BODY_FORMAT)
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": custom_error.INVALID_BODY_FORMAT,
+		})
 	}
 
 	// Extracting the username from reqeust's json body.
 	username, ok := content["username"].(string)
 	if !ok {
-		return c.String(http.StatusBadRequest, custom_error.MISSING_USERNAME)
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": custom_error.MISSING_USERNAME,
+		})
 	}
 
 	// Extracting the password from reqeust's json body.
 	password, ok := content["password"].(string)
 	if !ok {
-		return c.String(http.StatusBadRequest, custom_error.MISSING_PASSWORD)
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": custom_error.MISSING_PASSWORD,
+		})
 	}
 
 	// Adding the new user in the database.
 	err = database.AddUser(username, password)
 	if err != nil {
-		return c.String(http.StatusOK, err.Error())
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": err.Error(),
+		})
 	}
 
-	return c.String(http.StatusCreated, "registered successfully")
+	return c.JSON(http.StatusCreated, map[string]string{
+		"message": "registered successfully",
+	})
 }
 
 // POST "/login"
@@ -86,41 +98,56 @@ func login(c echo.Context) error {
 	// Checking request's content type.
 	content_type := c.Request().Header.Get(echo.HeaderContentType)
 	if content_type != "application/json" {
-		return c.String(http.StatusBadRequest, custom_error.INVALID_CONTENT_TYPE)
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": custom_error.INVALID_CONTENT_TYPE,
+		})
 	}
 
 	// Extracting request's json boby.
 	content := make(map[string]interface{})
 	err := json.NewDecoder(c.Request().Body).Decode(&content)
 	if err != nil {
-		return c.String(http.StatusBadRequest, custom_error.INVALID_BODY_FORMAT)
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": custom_error.INVALID_BODY_FORMAT,
+		})
 	}
 
 	// Extracting the username from reqeust's json body.
 	username, ok := content["username"].(string)
 	if !ok {
-		return c.String(http.StatusBadRequest, custom_error.MISSING_USERNAME)
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": custom_error.MISSING_USERNAME,
+		})
 	}
 
 	// Extracting the password from reqeust's json body.
 	password, ok := content["password"].(string)
 	if !ok {
-		return c.String(http.StatusBadRequest, custom_error.MISSING_PASSWORD)
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": custom_error.MISSING_PASSWORD,
+		})
 	}
 
 	// Checking for the validity of the credentials.
 	user, err := database.GetUser(username)
 	if err != nil || user.Password != password {
-		return c.String(http.StatusOK, err.Error())
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": err.Error(),
+		})
 	}
 
 	// Generating jwt.
 	token_string, err := auth.CreateToken(user.ID)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, custom_error.TOKEN_FAILURE)
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": custom_error.TOKEN_FAILURE,
+		})
 	}
 
-	return c.String(http.StatusOK, fmt.Sprintf("logged in successfully with jwt: %s", token_string))
+	return c.JSON(http.StatusOK, map[string]string{
+		"message": "logged in successfully",
+		"token":   token_string,
+	})
 }
 
 // GET "/basket"
@@ -130,7 +157,9 @@ func getBaskets(c echo.Context) error {
 	// Validating jwt.
 	user_id, err := auth.VerifyToken(extractToken(c))
 	if err != nil {
-		return c.String(http.StatusUnauthorized, err.Error())
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"message": err.Error(),
+		})
 	}
 
 	// Getting all of the baskets.
@@ -146,41 +175,56 @@ func createBasket(c echo.Context) error {
 	// Validating jwt.
 	user_id, err := auth.VerifyToken(extractToken(c))
 	if err != nil {
-		return c.String(http.StatusUnauthorized, err.Error())
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"message": err.Error(),
+		})
 	}
 
 	// Checking request's content type.
 	content_type := c.Request().Header.Get(echo.HeaderContentType)
 	if content_type != "application/json" {
-		return c.String(http.StatusBadRequest, custom_error.INVALID_CONTENT_TYPE)
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": custom_error.INVALID_CONTENT_TYPE,
+		})
 	}
 
 	// Extracting request's json boby.
 	content := make(map[string]interface{})
 	err = json.NewDecoder(c.Request().Body).Decode(&content)
 	if err != nil {
-		return c.String(http.StatusBadRequest, custom_error.INVALID_BODY_FORMAT)
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": custom_error.INVALID_BODY_FORMAT,
+		})
 	}
 
 	// Extracting the data from reqeust's json body.
 	data, ok := content["data"].(map[string]interface{})
 	if !ok {
-		return c.String(http.StatusBadRequest, custom_error.MISSING_DATA)
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": custom_error.MISSING_DATA,
+		})
 	}
 
 	// Extracting the state from reqeust's json body.
 	state, ok := content["state"].(string)
 	if !ok {
-		return c.String(http.StatusBadRequest, custom_error.MISSING_STATE)
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": custom_error.MISSING_STATE,
+		})
 	}
 
 	// Creating the new record in the database.
 	id, err := database.CreateBasket(user_id, data, state)
 	if err != nil {
-		return c.String(http.StatusOK, err.Error())
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": err.Error(),
+		})
 	}
 
-	return c.String(http.StatusCreated, fmt.Sprintf("created successfully with id: %d", id))
+	return c.JSON(http.StatusCreated, map[string]string{
+		"message":   "created successfully",
+		"basket_id": fmt.Sprint(id),
+	})
 }
 
 // PATCH "/basket/:id"
@@ -190,47 +234,63 @@ func updateBasket(c echo.Context) error {
 	// Validating jwt.
 	user_id, err := auth.VerifyToken(extractToken(c))
 	if err != nil {
-		return c.String(http.StatusUnauthorized, err.Error())
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"message": err.Error(),
+		})
 	}
 
 	// Extracting the id parameter.
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
-		return c.String(http.StatusBadRequest, custom_error.INVALID_ID)
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": custom_error.INVALID_ID,
+		})
 	}
 
 	// Checking request's content type.
 	content_type := c.Request().Header.Get(echo.HeaderContentType)
 	if content_type != "application/json" {
-		return c.String(http.StatusBadRequest, custom_error.INVALID_CONTENT_TYPE)
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": custom_error.INVALID_CONTENT_TYPE,
+		})
 	}
 
 	// Extracting request's json boby.
 	content := make(map[string]interface{})
 	err = json.NewDecoder(c.Request().Body).Decode(&content)
 	if err != nil {
-		return c.String(http.StatusBadRequest, custom_error.INVALID_ID)
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": custom_error.INVALID_ID,
+		})
 	}
 
 	// Extracting the data from reqeust's json body.
 	data, ok := content["data"].(map[string]interface{})
 	if !ok {
-		return c.String(http.StatusBadRequest, custom_error.MISSING_DATA)
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": custom_error.MISSING_DATA,
+		})
 	}
 
 	// Extracting the state from reqeust's json body.
 	state, ok := content["state"].(string)
 	if !ok {
-		return c.String(http.StatusBadRequest, custom_error.MISSING_STATE)
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": custom_error.MISSING_STATE,
+		})
 	}
 
 	// Updating the record in the database.
 	err = database.UpdateBasket(user_id, uint(id), data, state)
 	if err != nil {
-		return c.String(http.StatusBadRequest, err.Error())
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": err.Error(),
+		})
 	}
 
-	return c.String(http.StatusOK, "updateted successfully")
+	return c.JSON(http.StatusOK, map[string]string{
+		"message": "updateted successfully",
+	})
 }
 
 // GET "/basket/:id"
@@ -240,19 +300,25 @@ func getBasket(c echo.Context) error {
 	// Validating jwt.
 	user_id, err := auth.VerifyToken(extractToken(c))
 	if err != nil {
-		return c.String(http.StatusUnauthorized, err.Error())
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"message": err.Error(),
+		})
 	}
 
 	// Extracting the id parameter.
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
-		return c.String(http.StatusBadRequest, custom_error.INVALID_ID)
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": custom_error.INVALID_ID,
+		})
 	}
 
 	// Getting basket with the provided id.
 	basket, err := database.GetBasket(user_id, uint(id))
 	if err != nil {
-		return c.String(http.StatusBadRequest, err.Error())
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": err.Error(),
+		})
 	}
 
 	return c.JSON(http.StatusOK, basket)
@@ -265,20 +331,28 @@ func deleteBasket(c echo.Context) error {
 	// Validating jwt.
 	user_id, err := auth.VerifyToken(extractToken(c))
 	if err != nil {
-		return c.String(http.StatusUnauthorized, err.Error())
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"message": err.Error(),
+		})
 	}
 
 	// Extracting the id parameter.
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
-		return c.String(http.StatusBadRequest, custom_error.INVALID_ID)
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": custom_error.INVALID_ID,
+		})
 	}
 
 	// Deleting the record from the database.
 	err = database.DeleteBasket(user_id, uint(id))
 	if err != nil {
-		return c.String(http.StatusBadRequest, err.Error())
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": err.Error(),
+		})
 	}
 
-	return c.String(http.StatusOK, "deleted successfully")
+	return c.JSON(http.StatusOK, map[string]string{
+		"message": "deleted successfully",
+	})
 }
